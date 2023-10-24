@@ -15,6 +15,14 @@ public class Game
         file = fileName + ".txt";
         enemyFile = "[OUTPUT]" + fileName + ".txt";
         // TODO: Create Tree
+
+        if (myTurn)
+        {
+            ulong u = 1;
+            ulong whiteInfo = (u << 27) + (u << 36);
+            ulong blackInfo = (u << 28) + (u << 35);
+            Board.IsValid(whiteInfo, blackInfo, myTurn);
+        }
     }
 
     public bool Round()
