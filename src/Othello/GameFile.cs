@@ -1,14 +1,16 @@
+using System.IO;
+
 namespace Othello;
 
 internal static class GameFile
 {
-    public static void Create(string file, Board board)
+    public static void Create(string file, State board)
     {
         using StreamWriter sw = File.CreateText(file);
         sw.WriteLine(board.ToString());
     }
 
-    public static Board Open(string file)
+    public static State Open(string file)
     {
         var line = File
             .ReadAllText(file)
@@ -16,7 +18,7 @@ internal static class GameFile
 
         File.Delete(file);
 
-        var board = new Board(
+        var board = new State(
             byte.Parse(line[0]),
             ulong.Parse(line[1]),
             byte.Parse(line[2]),

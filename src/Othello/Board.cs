@@ -1,8 +1,10 @@
 namespace Othello;
 
-internal record struct Board(byte WhitePlays, ulong WhiteInfo, byte WhiteCount, ulong BlackInfo, byte BlackCount)
+internal static class Board
 {
-    public override readonly string ToString()
-        => $"{WhitePlays} {WhiteInfo} {WhiteCount} {BlackInfo} {BlackCount}";
-
+    public static bool IsValid(ulong board)
+    {
+        // TODO: Check if board is valid
+        return board != ulong.MaxValue;
+    }
 }
