@@ -1,76 +1,84 @@
 using System;
-using System.Collections.Generic;
 
 namespace Othello;
 
 internal static class Board
 {
-    const int HorizontalDiff = 8;
-    const int VerticalDiff = -1;
+    const ulong SHIFT = 1;
+    const int HORIZONTAL_DIFF = 8;
+    const int VERTICAL_DIFF = -1;
 
-    public static bool IsValid(ulong whiteBoard, ulong blackBoard, bool isWhite)
+    public static ulong[] GetPlays(State state, bool isWhite)
     {
-        var board = whiteBoard | blackBoard;
+        // Board data
+        var board = state.WhiteInfo | state.BlackInfo;
         var emptySquares = ~board;
+        
+        // Boards
+        var myBoard = isWhite ? state.WhiteInfo : state.BlackInfo;
+        var enemyBoard = isWhite ? state.BlackInfo : state.WhiteInfo;
+        
+        // Plays array
+        var n = (isWhite ? state.WhiteCount : state.BlackCount) * 8;
+        var possibilities = new ulong[n];
+        var index = 0;
 
-        var possibilities = isWhite ?
-            GetPossibilities(blackBoard, emptySquares, whiteBoard, blackBoard) :
-            GetPossibilities(whiteBoard, emptySquares, whiteBoard, blackBoard);
-
-        foreach (var item in possibilities)
-            Console.Write($"{item}, ");
-
-        return true;
-    }
-
-    private static int[] GetPossibilities(ulong board, ulong emptySquares, ulong whiteBoard, ulong blackBoard)
-    {
-        var possibilities = new List<int>();
-        for (int index = 0; index < 64; index++)
+        // Get all valid plays
+        for (int i = 0; i < 64; i++)
         {
-            var bit = CheckBit(board, index);
+            var bit = CheckBit(enemyBoard, i);
 
             if (!bit)
                 continue;
 
-            GetAdjacent(emptySquares, possibilities, index, whiteBoard, blackBoard);
+            GetAdjacent(myBoard, enemyBoard, emptySquares, possibilities, i, ref index);
         }
 
-        return possibilities.ToArray();
+        // New array with the right length of plays
+        var plays = new ulong[index];
+        for (int i = 0; i < index; i++)
+        {
+            Console.Write($"{possibilities[i]}, ");
+            plays[i] = possibilities[i];
+        }
+
+        return plays;
     }
 
-    private static void GetAdjacent(ulong emptySquares, List<int> possibilities, int index, ulong whiteBoard, ulong blackBoard)
+    private static void GetAdjacent(ulong myBoard, ulong enemyBoard, ulong emptySquares, ulong[] plays, int square, ref int playIndex)
     {
         for (int i = -1; i < 2; i++)
         {
             for (int j = -1; j < 2; j++)
             {
-                var checkIndex = index + HorizontalDiff * i + VerticalDiff * j;
+                var index = square + HORIZONTAL_DIFF * i + VERTICAL_DIFF * j;
 
-                if (!CheckBit(emptySquares, checkIndex))
+                if (!CheckBit(emptySquares, index))
                     continue;
 
-                if (IsValidPlay(checkIndex, whiteBoard, blackBoard))
-                    possibilities.Add(checkIndex);
+                if (IsValidPlay(myBoard, enemyBoard, index))
+                    plays[playIndex++] = SHIFT << index;
             }
         }
     }
 
-    private static bool IsValidPlay(int index, ulong myBoard, ulong enemyBoard)
+    private static bool IsValidPlay(ulong myBoard, ulong enemyBoard, int square)
     {
         for (int i = -1; i < 2; i++)
         {
             for (int j = -1; j < 2; j++)
             {
                 var flag = false;
+
                 for (int k = 1; k < 8; k++)
                 {
-                    var checkIndex = index + HorizontalDiff * i * k + VerticalDiff * j * k;
+                    var index = square + HORIZONTAL_DIFF * i * k + VERTICAL_DIFF * j * k;
 
-                    if (checkIndex > 64 || checkIndex < 0)
+                    // TODO: Improving board check
+                    if (index > 64 || index < 0)
                         break;
 
-                    if (CheckBit(myBoard, checkIndex))
+                    if (CheckBit(myBoard, index))
                     {
                         if (flag)
                             return true;
@@ -78,7 +86,7 @@ internal static class Board
                         break;
                     }
 
-                    if (!flag && CheckBit(enemyBoard, checkIndex))
+                    if (!flag && CheckBit(enemyBoard, index))
                         flag = true;
                 }
             }

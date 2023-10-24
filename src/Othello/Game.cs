@@ -21,7 +21,9 @@ public class Game
             ulong u = 1;
             ulong whiteInfo = (u << 27) + (u << 36);
             ulong blackInfo = (u << 28) + (u << 35);
-            Board.IsValid(whiteInfo, blackInfo, myTurn);
+
+            var state = new State(1, whiteInfo, 2, blackInfo, 2);
+            Board.GetPlays(state, myTurn);
         }
     }
 
@@ -32,7 +34,7 @@ public class Game
         else
             EnemyPlay();
 
-        return GameEnded();
+        return !GameEnded();
     }
 
     public void Play()
@@ -57,5 +59,5 @@ public class Game
         => File.Exists(enemyFile);
 
     private bool GameEnded()
-        => true;
+        => false;
 }
