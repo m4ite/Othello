@@ -14,7 +14,7 @@ internal class Program
 
         string fileName = args[0];
 
-        var game = new Game(fileName, DEPTH);
+        var game = new Game(fileName, 1);
         var running = true;
 
         while (running)

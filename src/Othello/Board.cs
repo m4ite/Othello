@@ -4,22 +4,23 @@ namespace Othello;
 
 internal static class Board
 {
-    const ulong SHIFT = 1;
-    const int HORIZONTAL_DIFF = 8;
-    const int VERTICAL_DIFF = -1;
+    private const ulong SHIFT = 1;
+    private const int HORIZONTAL_DIFF = 8;
+    private const int VERTICAL_DIFF = -1;
+    private const int SIDE = 8;
 
     public static ulong[] GetPlays(State state)
     {
         var isWhite = state.WhitePlays == 1;
-        
+
         // Board data
         var board = state.WhiteInfo | state.BlackInfo;
         var emptySquares = ~board;
-        
+
         // Boards
         var myBoard = isWhite ? state.WhiteInfo : state.BlackInfo;
         var enemyBoard = isWhite ? state.BlackInfo : state.WhiteInfo;
-        
+
         // Plays array
         var n = (isWhite ? state.WhiteCount : state.BlackCount) * 8;
         var possibilities = new ulong[n];
@@ -50,6 +51,11 @@ internal static class Board
             for (int j = -1; j < 2; j++)
             {
                 var index = square + HORIZONTAL_DIFF * i + VERTICAL_DIFF * j;
+                var x = square % SIDE + i;
+                var y = square / SIDE + j;
+
+                if (x >= SIDE || x < 0 || y >= SIDE || y < 0)
+                    continue;
 
                 if (!CheckBit(emptySquares, index))
                     continue;
@@ -72,7 +78,6 @@ internal static class Board
                 {
                     var index = square + HORIZONTAL_DIFF * i * k + VERTICAL_DIFF * j * k;
 
-                    // TODO: Improving board check
                     if (index > 64 || index < 0)
                         break;
 

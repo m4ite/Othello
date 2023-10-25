@@ -9,6 +9,7 @@ internal record struct State(byte WhitePlays, ulong WhiteInfo, byte WhiteCount, 
             WhitePlays = (byte)(WhitePlays ^ 1)
         };
 
+        // TODO: Modify turned pieces
         if (isWhite)
         {
             state.WhiteCount++;
