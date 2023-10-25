@@ -1,5 +1,4 @@
 using System;
-
 namespace Othello;
 
 internal static class Board
@@ -9,7 +8,7 @@ internal static class Board
     private const int VERTICAL_DIFF = -1;
     private const int SIDE = 8;
 
-    public static ulong[] GetPlays(State state)
+    public static Data[] GetPlays(State state)
     {
         var isWhite = state.WhitePlays == 1;
 
@@ -22,8 +21,8 @@ internal static class Board
         var enemyBoard = isWhite ? state.BlackInfo : state.WhiteInfo;
 
         // Plays array
-        var n = (isWhite ? state.WhiteCount : state.BlackCount) * 8;
-        var possibilities = new ulong[n];
+        var n = (isWhite ? state.BlackCount : state.WhiteCount) * 8;
+        var plays = new Data[n];
         var index = 0;
 
         // Get all valid plays
@@ -34,17 +33,20 @@ internal static class Board
             if (!bit)
                 continue;
 
-            GetAdjacent(myBoard, enemyBoard, emptySquares, possibilities, i, ref index);
+            GetAdjacent(myBoard, enemyBoard, emptySquares, plays, i, ref index);
         }
 
         // New array with the right length of plays
-        var plays = new ulong[index];
-        Array.Copy(possibilities, plays, index);
+        var possibilities = new Data[index + 1];
+        Array.Copy(plays, possibilities, index);
+
+        // Pass play
+        possibilities[index] = new Data(myBoard, 0, false);
 
         return possibilities;
     }
 
-    private static void GetAdjacent(ulong myBoard, ulong enemyBoard, ulong emptySquares, ulong[] plays, int square, ref int playIndex)
+    private static void GetAdjacent(ulong myBoard, ulong enemyBoard, ulong emptySquares, Data[] plays, int square, ref int playIndex)
     {
         for (int i = -1; i < 2; i++)
         {
@@ -60,19 +62,26 @@ internal static class Board
                 if (!CheckBit(emptySquares, index))
                     continue;
 
-                if (IsValidPlay(myBoard, enemyBoard, index))
-                    plays[playIndex++] = SHIFT << index;
+                var data = GetData(myBoard, enemyBoard, index);
+                if (data.Count > 0)
+                {
+                    data.Play |= SHIFT << index;
+                    plays[playIndex++] = data;
+                }
             }
         }
     }
 
-    private static bool IsValidPlay(ulong myBoard, ulong enemyBoard, int square)
+    private static Data GetData(ulong myBoard, ulong enemyBoard, int square)
     {
+        byte turned = 0;
+        ulong newBoard = myBoard;
         for (int i = -1; i < 2; i++)
         {
             for (int j = -1; j < 2; j++)
             {
                 var flag = false;
+                byte count = 0;
 
                 for (int k = 1; k < 8; k++)
                 {
@@ -81,21 +90,25 @@ internal static class Board
                     if (index > 64 || index < 0)
                         break;
 
+                    if (flag)
+                        break;
+
                     if (CheckBit(myBoard, index))
                     {
-                        if (flag)
-                            return true;
-
-                        break;
+                        turned += count;
+                        flag = true;
                     }
 
-                    if (!flag && CheckBit(enemyBoard, index))
-                        flag = true;
+                    if (CheckBit(enemyBoard, index))
+                    {
+                        newBoard |= SHIFT << index;
+                        count++;
+                    }
                 }
             }
         }
 
-        return false;
+        return new Data(newBoard, turned, true);
     }
 
     private static bool CheckBit(ulong data, int index)

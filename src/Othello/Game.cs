@@ -1,5 +1,3 @@
-using System.IO;
-
 namespace Othello;
 
 public class Game
@@ -11,7 +9,7 @@ public class Game
 
     public Game(string fileName, uint depth)
     {
-        myTurn = fileName == "M1";
+        myTurn = fileName == "m1";
         file = fileName + ".txt";
         enemyFile = "[OUTPUT]" + fileName + ".txt";
         tree = new Tree(State.Default(), depth);
@@ -30,7 +28,7 @@ public class Game
 
     private State Play()
     {
-        var state = tree.AlphaBeta();
+        var state = tree.GetBestPlay();
 
         GameFile.Create(file, state);
 
@@ -45,7 +43,7 @@ public class Game
     }
 
     private bool EnemyPlayed()
-        => File.Exists(enemyFile);
+        => GameFile.Exists(enemyFile);
 
     private bool GameEnded()
         => tree.Root.Ended;

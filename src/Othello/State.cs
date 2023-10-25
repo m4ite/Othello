@@ -2,23 +2,34 @@ namespace Othello;
 
 internal record struct State(byte WhitePlays, ulong WhiteInfo, byte WhiteCount, ulong BlackInfo, byte BlackCount)
 {
-    public State Change(ulong play, bool isWhite)
+    public State Change(Data data, bool isWhite)
     {
         var state = this with
         {
             WhitePlays = (byte)(WhitePlays ^ 1)
         };
 
-        // TODO: Modify turned pieces
         if (isWhite)
         {
-            state.WhiteCount++;
-            state.WhiteInfo = play;
+            state.WhiteInfo = data.Play;
+            state.BlackInfo = (BlackInfo & data.Play) ^ BlackInfo;
+
+            state.WhiteCount += data.Count;
+            state.BlackCount -= data.Count;
+            
+            if (data.Played)
+                state.WhiteCount++;
         }
         else
         {
-            state.BlackCount++;
-            state.BlackInfo = play;
+            state.BlackInfo = data.Play;
+            state.WhiteInfo = (WhiteInfo & data.Play) ^ WhiteInfo;
+
+            state.BlackCount += data.Count;
+            state.WhiteCount -= data.Count;
+
+            if (data.Played)
+                state.BlackCount++;
         }
 
         return state;

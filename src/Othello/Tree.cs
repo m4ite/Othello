@@ -1,5 +1,3 @@
-using System;
-
 namespace Othello;
 
 internal class Tree
@@ -14,9 +12,10 @@ internal class Tree
         Root.GenChildren(depth);
     }
 
-    public State AlphaBeta()
+    public State GetBestPlay()
     {
-        throw new NotImplementedException();
+        Root.AlphaBeta(depth);
+        return Root.GetBestChild();
     }
 
     public void Update(State state)

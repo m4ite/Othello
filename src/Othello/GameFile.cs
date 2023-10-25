@@ -4,6 +4,9 @@ namespace Othello;
 
 internal static class GameFile
 {
+    public static bool Exists(string file)
+        => File.Exists(file);
+
     public static void Create(string file, State board)
     {
         using StreamWriter sw = File.CreateText(file);

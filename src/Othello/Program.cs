@@ -8,13 +8,12 @@ internal class Program
 
     private static void Main(string[] args)
     {
-
         if (args.Length != 1)
             throw new Exception("Invalid arguments");
 
         string fileName = args[0];
 
-        var game = new Game(fileName, 1);
+        var game = new Game(fileName, DEPTH);
         var running = true;
 
         while (running)

@@ -1,7 +1,4 @@
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Security.AccessControl;
 
 namespace Othello;
 
@@ -68,39 +65,61 @@ internal class Node
         return 0f;
     }
 
-    public Node AlphaBeta(bool maximaze, uint depth)
-        => AlphaBeta(float.NegativeInfinity, float.PositiveInfinity, maximaze, depth);
-
-    private Node AlphaBeta(float alfa, float beta, bool maximaze, uint depth)
+    public State GetBestChild()
     {
-        if (depth == 0 || Ended)
-        {
-            Value = Heuristic(maximaze);
-            return this;
-        }
-
-        Value = maximaze ? float.NegativeInfinity : float.PositiveInfinity;
+        var state = State;
+        var value = float.NegativeInfinity;
 
         foreach (var child in children)
         {
-            var alfabeta = child.AlphaBeta(alfa, beta, !maximaze, depth - 1);
-
-            if (maximaze)
+            if (value < child.Value)
             {
-                if (alfabeta.Value > beta)
+                value = child.Value;
+                state = child.State;
+            }
+        }
+
+        return state;
+    }
+
+    public void AlphaBeta(uint depth)
+        => AlphaBeta(float.NegativeInfinity, float.PositiveInfinity, true, depth);
+
+    private float AlphaBeta(float alfa, float beta, bool maximize, uint depth)
+    {
+        if (depth == 0 || Ended)
+        {
+            Value = Heuristic(maximize);
+            return Value;
+        }
+
+        Value = maximize ? float.NegativeInfinity : float.PositiveInfinity;
+
+
+        foreach (var child in children)
+        {
+            var alphaBeta = child.AlphaBeta(alfa, beta, !maximize, depth - 1);
+
+            if (maximize)
+            {
+                Value = float.Max(Value, alphaBeta);
+
+                if (alphaBeta > beta)
                     break;
 
                 alfa = float.Max(alfa, Value);
             }
             else
             {
-                if (alfabeta.Value < alfa)
+                Value = float.Min(Value, alphaBeta);
+
+                if (alphaBeta < alfa)
                     break;
 
                 beta = float.Min(beta, Value);
             }
         }
 
-        return this;
+        return Value;
     }
 }
