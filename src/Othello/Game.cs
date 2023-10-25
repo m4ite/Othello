@@ -14,17 +14,9 @@ public class Game
         myTurn = fileName == "M1";
         file = fileName + ".txt";
         enemyFile = "[OUTPUT]" + fileName + ".txt";
-        // TODO: Create Tree
 
-        if (myTurn)
-        {
-            ulong u = 1;
-            ulong whiteInfo = (u << 27) + (u << 36);
-            ulong blackInfo = (u << 28) + (u << 35);
-
-            var state = new State(1, whiteInfo, 2, blackInfo, 2);
-            Board.GetPlays(state, myTurn);
-        }
+        var state = myTurn ? State.Default() : GameFile.Open(enemyFile);
+        tree = new Tree(state, depth);
     }
 
     public bool Round()
@@ -37,20 +29,22 @@ public class Game
         return !GameEnded();
     }
 
-    public void Play()
+    private void Play()
     {
-        // TODO: Get best move and generate State
-        var state = new State(0, 0, 0, 0, 0);
+        var state = tree.AlphaBeta();
+
         GameFile.Create(file, state);
 
         myTurn = false;
     }
 
-    public void EnemyPlay()
+    private void EnemyPlay()
     {
         while (!EnemyPlayed()) ;
 
         var state = GameFile.Open(enemyFile);
+
+        tree.Update(state);
 
         myTurn = true;
     }
@@ -59,5 +53,5 @@ public class Game
         => File.Exists(enemyFile);
 
     private bool GameEnded()
-        => false;
+        => Board.GetPlays(tree.Root.State).Length == 0;
 }

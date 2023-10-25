@@ -2,25 +2,26 @@ using System;
 
 namespace Othello;
 
-// TODO
 internal class Tree
 {
+    public Node Root { get; private set; }
     private readonly uint depth;
-    private Node Root;
 
-    public Tree(uint depth)
+    public Tree(State state, uint depth)
     {
         this.depth = depth;
-        Root = new Node();
+        Root = new Node(state);
+        Root.GenChildren(depth);
     }
 
-    public void AlphaBeta()
+    public State AlphaBeta()
     {
         throw new NotImplementedException();
     }
 
-    public void Update()
+    public void Update(State state)
     {
-        throw new NotImplementedException();
+        Root = Root.GetChild(state);
+        Root.GenChildren(depth);
     }
 }

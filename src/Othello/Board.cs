@@ -8,8 +8,10 @@ internal static class Board
     const int HORIZONTAL_DIFF = 8;
     const int VERTICAL_DIFF = -1;
 
-    public static ulong[] GetPlays(State state, bool isWhite)
+    public static ulong[] GetPlays(State state)
     {
+        var isWhite = state.WhitePlays == 1;
+        
         // Board data
         var board = state.WhiteInfo | state.BlackInfo;
         var emptySquares = ~board;
@@ -36,13 +38,9 @@ internal static class Board
 
         // New array with the right length of plays
         var plays = new ulong[index];
-        for (int i = 0; i < index; i++)
-        {
-            Console.Write($"{possibilities[i]}, ");
-            plays[i] = possibilities[i];
-        }
+        Array.Copy(possibilities, plays, index);
 
-        return plays;
+        return possibilities;
     }
 
     private static void GetAdjacent(ulong myBoard, ulong enemyBoard, ulong emptySquares, ulong[] plays, int square, ref int playIndex)
