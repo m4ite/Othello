@@ -1,12 +1,16 @@
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Security.AccessControl;
 
 namespace Othello;
 
 internal class Node
 {
     private Node[] children = Array.Empty<Node>();
-    public readonly State State;
+    public float Value { get; private set; }
     public bool Ended { get; private set; }
+    public readonly State State;
 
     public Node(State state)
         => State = state;
@@ -52,5 +56,51 @@ internal class Node
         }
 
         throw new Exception("Child not found");
+    }
+
+
+    private float Heuristic(bool myTurn)
+    {
+        if (Ended)
+            return myTurn ? float.NegativeInfinity : float.PositiveInfinity;
+
+
+        return 0f;
+    }
+
+    public Node AlphaBeta(bool maximaze, uint depth)
+        => AlphaBeta(float.NegativeInfinity, float.PositiveInfinity, maximaze, depth);
+
+    private Node AlphaBeta(float alfa, float beta, bool maximaze, uint depth)
+    {
+        if (depth == 0 || Ended)
+        {
+            Value = Heuristic(maximaze);
+            return this;
+        }
+
+        Value = maximaze ? float.NegativeInfinity : float.PositiveInfinity;
+
+        foreach (var child in children)
+        {
+            var alfabeta = child.AlphaBeta(alfa, beta, !maximaze, depth - 1);
+
+            if (maximaze)
+            {
+                if (alfabeta.Value > beta)
+                    break;
+
+                alfa = float.Max(alfa, Value);
+            }
+            else
+            {
+                if (alfabeta.Value < alfa)
+                    break;
+
+                beta = float.Min(beta, Value);
+            }
+        }
+
+        return this;
     }
 }
