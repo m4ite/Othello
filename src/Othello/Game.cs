@@ -14,44 +14,39 @@ public class Game
         myTurn = fileName == "M1";
         file = fileName + ".txt";
         enemyFile = "[OUTPUT]" + fileName + ".txt";
-
-        var state = myTurn ? State.Default() : GameFile.Open(enemyFile);
-        tree = new Tree(state, depth);
+        tree = new Tree(State.Default(), depth);
     }
 
     public bool Round()
     {
-        if (myTurn)
-            Play();
-        else
-            EnemyPlay();
+        var state = myTurn ? Play() : EnemyPlay();
+
+        tree.Update(state);
+
+        myTurn = !myTurn;
 
         return !GameEnded();
     }
 
-    private void Play()
+    private State Play()
     {
         var state = tree.AlphaBeta();
 
         GameFile.Create(file, state);
 
-        myTurn = false;
+        return state;
     }
 
-    private void EnemyPlay()
+    private State EnemyPlay()
     {
         while (!EnemyPlayed()) ;
 
-        var state = GameFile.Open(enemyFile);
-
-        tree.Update(state);
-
-        myTurn = true;
+        return GameFile.Open(enemyFile);
     }
 
     private bool EnemyPlayed()
         => File.Exists(enemyFile);
 
     private bool GameEnded()
-        => Board.GetPlays(tree.Root.State).Length == 0;
+        => tree.Root.Ended;
 }
