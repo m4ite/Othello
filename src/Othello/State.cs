@@ -1,38 +1,32 @@
+using System.IO;
+
 namespace Othello;
 
-internal record struct State(byte WhitePlays, ulong WhiteInfo, byte WhiteCount, ulong BlackInfo, byte BlackCount)
+internal readonly record struct State(byte WhitePlays, ulong WhiteInfo, byte WhiteCount, ulong BlackInfo, byte BlackCount)
 {
-    public State Change(Data data, bool isWhite)
+    public static State Load(string file)
     {
-        var state = this with
-        {
-            WhitePlays = (byte)(WhitePlays ^ 1)
-        };
+        var line = File
+            .ReadAllText(file)
+            .Split(' ');
 
-        if (isWhite)
-        {
-            state.WhiteInfo = data.Play;
-            state.BlackInfo = (BlackInfo & data.Play) ^ BlackInfo;
+        File.Delete(file);
 
-            state.WhiteCount += data.Count;
-            state.BlackCount -= data.Count;
-            
-            if (data.Played)
-                state.WhiteCount++;
-        }
-        else
-        {
-            state.BlackInfo = data.Play;
-            state.WhiteInfo = (WhiteInfo & data.Play) ^ WhiteInfo;
+        var board = new State(
+            byte.Parse(line[0]),
+            ulong.Parse(line[1]),
+            byte.Parse(line[2]),
+            ulong.Parse(line[3]),
+            byte.Parse(line[4])
+        );
 
-            state.BlackCount += data.Count;
-            state.WhiteCount -= data.Count;
+        return board;
+    }
 
-            if (data.Played)
-                state.BlackCount++;
-        }
-
-        return state;
+    public readonly void Save(string file, State prevState)
+    {
+        string content = prevState == this ? "pass" : ToString();
+        File.WriteAllText(file, content);
     }
 
     public static State Default()
@@ -43,6 +37,41 @@ internal record struct State(byte WhitePlays, ulong WhiteInfo, byte WhiteCount, 
         ulong blackInfo = (u << 28) + (u << 35);
 
         var state = new State(1, whiteInfo, 2, blackInfo, 2);
+
+        return state;
+    }
+
+    public State Change(PlayData data, bool isWhite)
+    {
+        var whiteCount = WhiteCount;
+        var blackCount = BlackCount;
+
+        if (isWhite)
+        {
+            whiteCount += data.Count;
+            blackCount -= data.Count;
+
+            if (data.Played)
+                whiteCount++;
+        }
+        else
+        {
+            whiteCount -= data.Count;
+            blackCount += data.Count;
+
+            if (data.Played)
+                blackCount++;
+        }
+
+        var state = this with
+        {
+            WhitePlays = (byte)(WhitePlays ^ 1),
+            WhiteInfo = isWhite ? data.Play : (WhiteInfo & data.Play) ^ WhiteInfo,
+            WhiteCount = whiteCount,
+            BlackInfo = isWhite ? (BlackInfo & data.Play) ^ BlackInfo : data.Play,
+            BlackCount = blackCount
+
+        };
 
         return state;
     }

@@ -8,7 +8,7 @@ internal static class Board
     private const int VERTICAL_DIFF = -1;
     private const int SIDE = 8;
 
-    public static Data[] GetPlays(State state)
+    public static PlayData[] GetPlays(State state)
     {
         var isWhite = state.WhitePlays == 1;
 
@@ -22,7 +22,7 @@ internal static class Board
 
         // Plays array
         var n = (isWhite ? state.BlackCount : state.WhiteCount) * 8;
-        var plays = new Data[n];
+        var plays = new PlayData[n];
         var index = 0;
 
         // Get all valid plays
@@ -37,16 +37,16 @@ internal static class Board
         }
 
         // New array with the right length of plays
-        var possibilities = new Data[index + 1];
+        var possibilities = new PlayData[index + 1];
         Array.Copy(plays, possibilities, index);
 
         // Pass play
-        possibilities[index] = new Data(myBoard, 0, false);
+        possibilities[index] = new PlayData(myBoard, 0, false);
 
         return possibilities;
     }
 
-    private static void GetAdjacent(ulong myBoard, ulong enemyBoard, ulong emptySquares, Data[] plays, int square, ref int playIndex)
+    private static void GetAdjacent(ulong myBoard, ulong enemyBoard, ulong emptySquares, PlayData[] plays, int square, ref int playIndex)
     {
         for (int i = -1; i < 2; i++)
         {
@@ -72,7 +72,7 @@ internal static class Board
         }
     }
 
-    private static Data GetData(ulong myBoard, ulong enemyBoard, int square)
+    private static PlayData GetData(ulong myBoard, ulong enemyBoard, int square)
     {
         byte turned = 0;
         ulong newBoard = myBoard;
@@ -108,7 +108,7 @@ internal static class Board
             }
         }
 
-        return new Data(newBoard, turned, true);
+        return new PlayData(newBoard, turned, true);
     }
 
     private static bool CheckBit(ulong data, int index)

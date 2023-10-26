@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace Othello;
 
 public class Game
@@ -30,7 +32,7 @@ public class Game
     {
         var state = tree.GetBestPlay();
 
-        GameFile.Create(file, state);
+        state.Save(file, tree.Root.State);
 
         return state;
     }
@@ -39,11 +41,11 @@ public class Game
     {
         while (!EnemyPlayed()) ;
 
-        return GameFile.Open(enemyFile);
+        return State.Load(enemyFile);
     }
 
     private bool EnemyPlayed()
-        => GameFile.Exists(enemyFile);
+        => File.Exists(enemyFile);
 
     private bool GameEnded()
         => tree.Root.Ended;
