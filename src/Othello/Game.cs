@@ -1,20 +1,23 @@
 using System.IO;
+using System.Threading;
 
 namespace Othello;
 
 public class Game
 {
-    private readonly string file;
+    private readonly string myFile;
     private readonly string enemyFile;
     private readonly Tree tree;
+    private readonly bool ImWhite;
     private bool myTurn;
 
     public Game(string fileName, uint depth)
     {
-        myTurn = fileName == "m1";
-        file = fileName + ".txt";
+        ImWhite = fileName == "m1";
+        myTurn = ImWhite;
+        myFile = fileName + ".txt";
         enemyFile = "[OUTPUT]" + fileName + ".txt";
-        tree = new Tree(State.Default(), depth);
+        tree = new Tree(depth);
     }
 
     public bool Round()
@@ -30,18 +33,23 @@ public class Game
 
     private State Play()
     {
-        var state = tree.GetBestPlay();
+        var state = tree.GetBestPlay(ImWhite);
 
-        state.Save(file, tree.Root.State);
+        state.Save(myFile, tree.Root.State);
 
         return state;
     }
 
     private State EnemyPlay()
     {
-        while (!EnemyPlayed()) ;
+        while (!EnemyPlayed())
+            Thread.Sleep(1000);
 
-        return State.Load(enemyFile);
+        var state = State.Load(enemyFile);
+
+        return state ?? tree.Root.State with {
+            WhitePlays = (byte)(tree.Root.State.WhitePlays ^ 1)
+        };
     }
 
     private bool EnemyPlayed()

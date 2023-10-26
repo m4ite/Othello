@@ -1,16 +1,20 @@
+using System;
 using System.IO;
 
 namespace Othello;
 
 internal readonly record struct State(byte WhitePlays, ulong WhiteInfo, byte WhiteCount, ulong BlackInfo, byte BlackCount)
 {
-    public static State Load(string file)
+    public static State? Load(string file)
     {
         var line = File
             .ReadAllText(file)
-            .Split(' ');
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         File.Delete(file);
+
+        if (line[0] == "pass")
+            return null;
 
         var board = new State(
             byte.Parse(line[0]),
@@ -41,12 +45,12 @@ internal readonly record struct State(byte WhitePlays, ulong WhiteInfo, byte Whi
         return state;
     }
 
-    public State Change(PlayData data, bool isWhite)
+    public State Change(Play data, bool whitePlayed)
     {
         var whiteCount = WhiteCount;
         var blackCount = BlackCount;
 
-        if (isWhite)
+        if (whitePlayed)
         {
             whiteCount += data.Count;
             blackCount -= data.Count;
@@ -66,9 +70,9 @@ internal readonly record struct State(byte WhitePlays, ulong WhiteInfo, byte Whi
         var state = this with
         {
             WhitePlays = (byte)(WhitePlays ^ 1),
-            WhiteInfo = isWhite ? data.Play : (WhiteInfo & data.Play) ^ WhiteInfo,
+            WhiteInfo = whitePlayed ? data.Board : (WhiteInfo & data.Board) ^ WhiteInfo,
             WhiteCount = whiteCount,
-            BlackInfo = isWhite ? (BlackInfo & data.Play) ^ BlackInfo : data.Play,
+            BlackInfo = whitePlayed ? (BlackInfo & data.Board) ^ BlackInfo : data.Board,
             BlackCount = blackCount
 
         };

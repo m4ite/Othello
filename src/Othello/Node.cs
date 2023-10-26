@@ -7,6 +7,7 @@ internal class Node
     private Node[] children = Array.Empty<Node>();
     public float Value { get; private set; }
     public bool Ended { get; private set; }
+    private bool hasChildren;
     public readonly State State;
 
     public Node(State state)
@@ -17,31 +18,34 @@ internal class Node
         if (depth == 0 || Ended)
             return;
 
-        if (this.children.Length != 0)
-        {
-            foreach (var child in this.children)
-                child.GenChildren(depth - 1);
-        }
+        if (!hasChildren)
+            GenerateChildren();
 
-        var plays = Board.GetPlays(State);
-        var children = new Node[plays.Length];
+        foreach (var child in children)
+            child.GenChildren(depth - 1);
+    }
 
-        for (int i = 0; i < children.Length; i++)
-        {
-            var state = State.Change(plays[i], State.WhitePlays == 1);
-            children[i] = new Node(state);
-        }
+    private void GenerateChildren()
+    {
+        hasChildren = true;
 
-        if (children.Length == 0)
+        var plays = Play.GetPlays(State);
+        if (plays.Length == 0)
         {
             Ended = true;
             return;
         }
 
-        this.children = children;
+        var children = new Node[plays.Length];
+        var isWhite = State.WhitePlays == 1;
 
-        foreach (var child in children)
-            child.GenChildren(depth - 1);
+        for (int i = 0; i < children.Length; i++)
+        {
+            var state = State.Change(plays[i], isWhite);
+            children[i] = new Node(state);
+        }
+
+        this.children = children;
     }
 
     public Node GetChild(State state)
@@ -49,20 +53,11 @@ internal class Node
         foreach (var child in children)
         {
             if (child.State == state)
-                return this;
+                return child;
         }
-
+        
+        // TODO: Create custom error
         throw new Exception("Child not found");
-    }
-
-
-    private float Heuristic(bool myTurn)
-    {
-        if (Ended)
-            return myTurn ? float.NegativeInfinity : float.PositiveInfinity;
-
-
-        return 0f;
     }
 
     public State GetBestChild()
@@ -82,14 +77,25 @@ internal class Node
         return state;
     }
 
-    public void AlphaBeta(uint depth)
-        => AlphaBeta(float.NegativeInfinity, float.PositiveInfinity, true, depth);
+    private float Heuristic(bool ImWhite)
+    {
+        if (!Ended)
+            return 0f;
 
-    private float AlphaBeta(float alfa, float beta, bool maximize, uint depth)
+        if (ImWhite)
+            return State.WhiteCount > State.BlackCount ? float.PositiveInfinity : float.NegativeInfinity;
+
+        return State.BlackCount > State.WhiteCount ? float.PositiveInfinity : float.NegativeInfinity;
+    }
+
+    public void AlphaBeta(uint depth, bool ImWhite)
+        => AlphaBeta(float.NegativeInfinity, float.PositiveInfinity, true, depth, ImWhite);
+
+    private float AlphaBeta(float alfa, float beta, bool maximize, uint depth, bool ImWhite)
     {
         if (depth == 0 || Ended)
         {
-            Value = Heuristic(maximize);
+            Value = Heuristic(ImWhite);
             return Value;
         }
 
@@ -98,7 +104,7 @@ internal class Node
 
         foreach (var child in children)
         {
-            var alphaBeta = child.AlphaBeta(alfa, beta, !maximize, depth - 1);
+            var alphaBeta = child.AlphaBeta(alfa, beta, !maximize, depth - 1, ImWhite);
 
             if (maximize)
             {
