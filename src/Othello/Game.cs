@@ -22,6 +22,7 @@ public class Game
 
     public bool Round()
     {
+        Thread.Sleep(3000);
         var state = myTurn ? Play() : EnemyPlay();
 
         tree.Update(state);

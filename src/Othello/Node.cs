@@ -55,7 +55,7 @@ internal class Node
             if (child.State == state)
                 return child;
         }
-        
+
         // TODO: Create custom error
         throw new Exception("Child not found");
     }
@@ -79,13 +79,18 @@ internal class Node
 
     private float Heuristic(bool ImWhite)
     {
-        if (!Ended)
-            return 0f;
+        if (Ended)
+        {
+            if (ImWhite)
+                return State.WhiteCount > State.BlackCount ? float.PositiveInfinity : float.NegativeInfinity;
+
+            return State.BlackCount > State.WhiteCount ? float.PositiveInfinity : float.NegativeInfinity;
+        }
 
         if (ImWhite)
-            return State.WhiteCount > State.BlackCount ? float.PositiveInfinity : float.NegativeInfinity;
+            return State.WhiteCount - State.BlackCount;
 
-        return State.BlackCount > State.WhiteCount ? float.PositiveInfinity : float.NegativeInfinity;
+        return State.BlackCount - State.WhiteCount;
     }
 
     public void AlphaBeta(uint depth, bool ImWhite)

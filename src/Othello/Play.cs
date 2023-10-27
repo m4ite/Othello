@@ -6,7 +6,7 @@ internal record struct Play(ulong Board, byte Count)
 {
     private const ulong SHIFT = 1;
     private const int HORIZONTAL_DIFF = 8;
-    private const int VERTICAL_DIFF = -1;
+    private const int VERTICAL_DIFF = 1;
     private const int SIDE = 8;
     private const int AROUND_SQUARES = 8;
     private const int BOARD_SIZE = 64;
@@ -45,12 +45,12 @@ internal record struct Play(ulong Board, byte Count)
 
         for (int i = -1; i < 2; i++)
         {
-            var y = emptyPosition / SIDE + i;
-            if (y < 0 || y > 7)
-                break;
-
             for (int j = -1; j < 2; j++)
             {
+                var y = emptyPosition / SIDE + i;
+                if (y < 0 || y > 7)
+                    break;
+
                 var x = emptyPosition % SIDE + j;
                 if (x < 0 || x > 7)
                     break;
@@ -96,7 +96,7 @@ internal record struct Play(ulong Board, byte Count)
                     if (x < 0 || x > 7)
                         break;
 
-                    var boardPosition = playPosition + VERTICAL_DIFF * i + HORIZONTAL_DIFF * j * k;
+                    var boardPosition = playPosition + VERTICAL_DIFF * i * k + HORIZONTAL_DIFF * j * k;
                     if (boardPosition < 0 || boardPosition >= BOARD_SIZE)
                         break;
 
@@ -113,7 +113,10 @@ internal record struct Play(ulong Board, byte Count)
                     {
                         tempBoard |= SHIFT << boardPosition;
                         turnedCount++;
+                        continue;
                     }
+
+                    break;
                 }
             }
         }

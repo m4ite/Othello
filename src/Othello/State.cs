@@ -29,9 +29,12 @@ internal readonly record struct State(byte WhitePlays, ulong WhiteInfo, byte Whi
 
     public readonly void Save(string file, State prevState)
     {
-        string content = prevState == this ? "pass" : ToString();
+        string content = IsEqual(prevState) ? "pass" : ToString();
         File.WriteAllText(file, content);
     }
+
+    private bool IsEqual(State state)
+        => WhiteInfo == state.WhiteInfo && BlackInfo == state.BlackInfo;
 
     public static State Default()
     {
