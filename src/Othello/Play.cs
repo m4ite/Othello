@@ -2,7 +2,7 @@ using System;
 
 namespace Othello;
 
-internal record struct Play(ulong Board, byte Count, bool Played)
+internal record struct Play(ulong Board, byte Count)
 {
     private const ulong SHIFT = 1;
     private const int HORIZONTAL_DIFF = 8;
@@ -34,7 +34,7 @@ internal record struct Play(ulong Board, byte Count, bool Played)
 
         var possibilities = new Play[index + 1];
         Array.Copy(plays, possibilities, index);
-        possibilities[index] = new Play(myBoard, 0, false);
+        possibilities[index] = new Play(myBoard, 0);
 
         return possibilities;
     }
@@ -81,27 +81,23 @@ internal record struct Play(ulong Board, byte Count, bool Played)
 
         for (int i = -1; i < 2; i++)
         {
-            var y = playPosition / SIDE + i;
-            if (y < 0 || y > 7)
-                break;
-
             for (int j = -1; j < 2; j++)
             {
-                var x = playPosition % SIDE + j;
-                if (x < 0 || x > 7)
-                    break;
-
                 byte turnedCount = 0;
                 ulong tempBoard = 0;
-                var wasTurned = false;
 
                 for (int k = 1; k < 8; k++)
                 {
-                    var boardPosition = playPosition + VERTICAL_DIFF * i + HORIZONTAL_DIFF * j * k;
-                    if (boardPosition < 0 || boardPosition >= BOARD_SIZE)
+                    var y = playPosition / SIDE + i * k;
+                    if (y < 0 || y > 7)
                         break;
 
-                    if (wasTurned)
+                    var x = playPosition % SIDE + j * k;
+                    if (x < 0 || x > 7)
+                        break;
+
+                    var boardPosition = playPosition + VERTICAL_DIFF * i + HORIZONTAL_DIFF * j * k;
+                    if (boardPosition < 0 || boardPosition >= BOARD_SIZE)
                         break;
 
                     // Turn pieces
@@ -109,9 +105,9 @@ internal record struct Play(ulong Board, byte Count, bool Played)
                     {
                         turned += turnedCount;
                         newBoard |= tempBoard;
-                        wasTurned = true;
+                        break;
                     }
-                    
+
                     // Add enemy piece to stage
                     if (GetBit(enemyBoard, boardPosition) == 1)
                     {
@@ -122,7 +118,7 @@ internal record struct Play(ulong Board, byte Count, bool Played)
             }
         }
 
-        return new Play(newBoard, turned, true);
+        return new Play(newBoard, turned);
     }
 
     private static ulong GetBit(ulong data, int index)

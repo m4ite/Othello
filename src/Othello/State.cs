@@ -55,7 +55,7 @@ internal readonly record struct State(byte WhitePlays, ulong WhiteInfo, byte Whi
             whiteCount += data.Count;
             blackCount -= data.Count;
 
-            if (data.Played)
+            if (data.Count != 0)
                 whiteCount++;
         }
         else
@@ -63,7 +63,7 @@ internal readonly record struct State(byte WhitePlays, ulong WhiteInfo, byte Whi
             whiteCount -= data.Count;
             blackCount += data.Count;
 
-            if (data.Played)
+            if (data.Count != 0)
                 blackCount++;
         }
 
